@@ -1,5 +1,6 @@
 ## IDE
 .bloop
+.bsp
 .metals
 metals.sbt
 
