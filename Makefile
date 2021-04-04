@@ -7,15 +7,6 @@ test: ## Format and build
 check: ## Check sources
 	sbt 'checkAll; compile; test'
 
-dev: ## webpack watch and sbt rebuilding on source changes
-	sbt '~dev'
-
-dev-start: ## Start scala build and webpack watch
-	sbt 'devStart'
-
-dev-stop: ## Stop watch
-	sbt 'devStop'
-
 .PHONY: dist
 dist: ## Dist
 	sbt 'dist'

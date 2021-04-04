@@ -8,6 +8,7 @@ addCommandAlias("fixAll", "fix; format")
 addCommandAlias("checkAll", "fixCheck; formatCheck")
 addCommandAlias("devStart", "fastOptJS::startWebpackDevServer")
 addCommandAlias("devStop", "fastOptJS::stopWebpackDevServer")
+addCommandAlias("dev", "~devStart")
 addCommandAlias("dist", "fixAll; fullOptJS::webpack")
 
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
