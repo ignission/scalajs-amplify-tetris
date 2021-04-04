@@ -7,6 +7,7 @@ addCommandAlias("formatCheck", "; scalafmtCheck; test:scalafmtCheck; scalafmtSbt
 addCommandAlias("fixAll", "fix; format")
 addCommandAlias("checkAll", "fixCheck; formatCheck")
 addCommandAlias("dev", "fastOptJS::startWebpackDevServer")
+addCommandAlias("dist", "fixAll; fullOptJS::webpack")
 
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
 

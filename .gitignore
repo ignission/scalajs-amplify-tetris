@@ -6,3 +6,6 @@ metals.sbt
 
 ## Scala
 target
+
+## Outputs
+dist
