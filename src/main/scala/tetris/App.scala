@@ -1,6 +1,12 @@
 package tetris
 
+import scala.scalajs.js.annotation.JSExportTopLevel
+
 object App {
 
-  def main(args: Array[String]): Unit = {}
+  @JSExportTopLevel("main")
+  def main(): Unit = {
+
+    println("Hello world3!")
+  }
 }

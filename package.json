@@ -1,0 +1,11 @@
+{
+  "dependencies": {},
+  "devDependencies": {
+    "file-loader": "6.0.0",
+    "style-loader": "1.2.0",
+    "css-loader": "3.5.3",
+    "html-webpack-plugin": "4.2.0",
+    "copy-webpack-plugin": "5.1.1",
+    "webpack-merge": "4.2.2"
+  }
+}
