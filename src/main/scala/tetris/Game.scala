@@ -6,7 +6,14 @@ import tetris.datas.{Color, InputKeys, Piece, Pieces, Point}
 
 case class Cell(var color: Color = Color.Black)
 
-case class GameContext(bounds: Point, linesCleared: Int = 0, prevKeys: Set[Int] = Set.empty[Int]) {
+case class GameContext(
+    bounds: Point,
+    linesCleared: Int = 0,
+    prevKeys: Set[Int] = Set.empty[Int],
+    var moveCount: Int = 0
+) {
+  private final val DEFAULT_MOVE_COUNT = 15
+
   val blockWidth: Int          = 20
   val gridDims: Point          = Point(13, bounds.y / blockWidth)
   val leftBorder: Double       = (bounds.x - blockWidth * gridDims.x) / 2
@@ -14,6 +21,12 @@ case class GameContext(bounds: Point, linesCleared: Int = 0, prevKeys: Set[Int] 
 
   def incrementLinesCleard: GameContext =
     this.copy(linesCleared = linesCleared + 1)
+
+  def setDefaultMoveCount(): Unit =
+    moveCount = DEFAULT_MOVE_COUNT
+
+  def decrementMoveCount(): Unit =
+    moveCount = moveCount - 1
 
   def updateKeyInputs(keys: Set[Int]): GameContext =
     this.copy(prevKeys = keys)
@@ -35,8 +48,8 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       ctx.arc(x, y, r, 0, math.Pi * 2)
       ctx.fill()
     }
-    def strokePath(points: Point*) = {
 
+    def strokePath(points: Point*) = {
       ctx.beginPath()
       ctx.moveTo(points.last.x, points.last.y)
       for (p <- points) {
@@ -48,7 +61,6 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
   private val pieces              = Pieces.all
   private var gameCtx             = GameContext.initialValue(bounds)
-  private var moveCount           = 0
   private var nextPiece: Piece    = pieces.randomNext()
   private var currentPiece: Piece = pieces.randomNext()
   private var piecePos            = Point(gameCtx.gridDims.x / 2, 0)
@@ -104,9 +116,10 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
     gameCtx.updateKeyInputs(keys)
 
-    if (moveCount > 0) moveCount -= 1
-    else {
-      moveCount = 15
+    if (gameCtx.moveCount > 0) {
+      gameCtx.decrementMoveCount()
+    } else {
+      gameCtx.setDefaultMoveCount()
       moveDown()
     }
 
