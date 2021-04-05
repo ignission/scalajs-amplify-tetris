@@ -32,7 +32,12 @@ case class Grid(rows: IndexedSeq[Row]) {
   def cell(x: Int, y: Int): Cell =
     row(y).cell(x)
 
-  def clearRow(i: Int): Grid = ???
+  def clearRow(i: Int): Grid =
+    Grid(
+      for {
+        (r, index) <- rows.zipWithIndex
+      } yield if (i == index) r.clear() else r
+    )
 }
 
 object Grid {
@@ -125,7 +130,8 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     }
   }
 
-  private val pieces              = Pieces.all
+  private val pieces = Pieces.all
+
   private var gameCtx             = GameContext.initialValue(bounds)
   private var nextPiece: Piece    = pieces.randomNext()
   private var currentPiece: Piece = pieces.randomNext()
