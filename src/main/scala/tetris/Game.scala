@@ -167,6 +167,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
     gameCtx = gameCtx.updateKeyInputs(keys)
 
+    // TODO: move count is mutable
     if (gameCtx.moveCount > 0) {
       gameCtx.decrementMoveCount()
     } else {
@@ -187,7 +188,6 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
         }
       case _ =>
         gameCtx = gameCtx.incrementLinesCleard().clearRow(i)
-      // for (s <- gameCtx.grid(i)) s.color = Color.Black
     }
   }
 
