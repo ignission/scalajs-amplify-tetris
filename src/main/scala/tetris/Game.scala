@@ -114,7 +114,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     }
     if (keys(InputKeys.KEY_DOWN)) moveDown()
 
-    gameCtx.updateKeyInputs(keys)
+    gameCtx = gameCtx.updateKeyInputs(keys)
 
     if (gameCtx.moveCount > 0) {
       gameCtx.decrementMoveCount()
