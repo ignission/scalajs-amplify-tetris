@@ -7,7 +7,7 @@ object InputKeys {
   final val KEY_RIGHT = 39
   final val KEY_DOWN  = 40
 
-  final val all: Seq[Int] = Seq(
+  final val definedAll: Seq[Int] = Seq(
     KEY_SPACE,
     KEY_LEFT,
     KEY_RIGHT,
@@ -15,5 +15,5 @@ object InputKeys {
   )
 
   def contains(keyCode: Int): Boolean =
-    all.contains(keyCode)
+    definedAll.contains(keyCode)
 }

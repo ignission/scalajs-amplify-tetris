@@ -39,8 +39,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     }
   }
 
-  private val pieces = Pieces.all
-
+  private val pieces              = Pieces.all
   private var gameCtx             = GameContext.initialValue(bounds)
   private var moveCount           = 0
   private var nextPiece: Piece    = pieces.randomNext()
@@ -50,7 +49,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
   var result: Option[String] = None
 
-  def findCollisions(offset: Point) = {
+  def findCollisions(offset: Point): IndexedSeq[Unit] = {
     val pts = currentPiece.iterator(piecePos).toArray
     for {
       index <- 0 until pts.length
@@ -64,7 +63,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     } yield ()
   }
 
-  def moveDown() = {
+  def moveDown(): Unit = {
     val collisions = findCollisions(Point(0, 1))
     val pts        = currentPiece.iterator(piecePos).toArray
     if (collisions.length > 0) {
@@ -105,7 +104,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       moveDown()
     }
 
-    def row(i: Int) =
+    def row(i: Int): IndexedSeq[Cell] =
       (0 until gameCtx.gridDims.x.toInt).map(j => gameCtx.grid(j)(i))
 
     var remaining = for {
