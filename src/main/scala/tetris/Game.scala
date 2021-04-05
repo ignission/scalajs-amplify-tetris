@@ -95,7 +95,9 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       moveDown()
     }
 
-    def row(i: Int) = (0 until gridDims.x.toInt).map(j => grid(j)(i))
+    def row(i: Int) =
+      (0 until gridDims.x.toInt).map(j => grid(j)(i))
+
     var remaining = for {
       i <- (gridDims.y.toInt - 1 to 0 by -1).toList
       if !row(i).forall(_.color != Color.Black)
@@ -113,7 +115,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     }
   }
 
-  def draw(ctx: CanvasRenderingContext2D): Unit = {
+  def draw(implicit ctx: CanvasRenderingContext2D): Unit = {
     ctx.fillStyle = Color.Black.value
     ctx.fillRect(0, 0, bounds.x, bounds.y)
 
@@ -122,25 +124,11 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     ctx.fillText("Lines Cleared: " + linesCleared, leftBorder * 1.3 + gridDims.x * blockWidth, 100)
     ctx.fillText("Next Block", leftBorder * 1.35 + gridDims.x * blockWidth, 150)
 
-    def fillBlock(i: Int, j: Int, color: Color): Unit = {
-      ctx.fillStyle = color.replace(255, 128).value
-      ctx.fillRect(leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
-      ctx.strokeStyle = color.value
-      ctx.strokeRect(leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
-    }
     for {
       i <- 0 until gridDims.x.toInt
       j <- 0 until gridDims.y.toInt
     } fillBlock(i, j, grid(i)(j).color)
 
-    def draw(piece: Piece, pos: Point, external: Boolean) = {
-      val pts = piece.iterator(pos)
-      for (index <- 0 until pts.length) {
-        val (i, j) = pts(index)
-        if (Point(i, j).within(Point(0, 0), gridDims) || external)
-          fillBlock(i, j, piece.color)
-      }
-    }
     draw(currentPiece, piecePos, external = false)
     draw(nextPiece, Point(18, 9), external = true)
 
@@ -153,5 +141,25 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       Point(bounds.x - leftBorder, 0),
       Point(bounds.x - leftBorder, bounds.y)
     )
+  }
+
+  def draw(piece: Piece, pos: Point, external: Boolean)(implicit
+      ctx: dom.CanvasRenderingContext2D
+  ) = {
+    val pts = piece.iterator(pos)
+    for (index <- 0 until pts.length) {
+      val (i, j) = pts(index)
+      if (Point(i, j).within(Point(0, 0), gridDims) || external)
+        fillBlock(i, j, piece.color)
+    }
+  }
+
+  private def fillBlock(i: Int, j: Int, color: Color)(implicit
+      ctx: dom.CanvasRenderingContext2D
+  ): Unit = {
+    ctx.fillStyle = color.replace(255, 128).value
+    ctx.fillRect(leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
+    ctx.strokeStyle = color.value
+    ctx.strokeRect(leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
   }
 }
