@@ -17,6 +17,10 @@ case class GameContext(bounds: Point, linesCleared: Int = 0, prevKeys: Set[Int] 
 
   def updateKeyInputs(keys: Set[Int]): GameContext =
     this.copy(prevKeys = keys)
+
+  def row(i: Int): IndexedSeq[Cell] =
+    (0 until gridDims.x.toInt).map(j => grid(j)(i))
+
 }
 
 object GameContext {
@@ -106,18 +110,15 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       moveDown()
     }
 
-    def row(i: Int): IndexedSeq[Cell] =
-      (0 until gameCtx.gridDims.x.toInt).map(j => gameCtx.grid(j)(i))
-
     var remaining = for {
       i <- (gameCtx.gridDims.y.toInt - 1 to 0 by -1).toList
-      if !row(i).forall(_.color != Color.Black)
+      if !gameCtx.row(i).forall(_.color != Color.Black)
     } yield i
 
     for (i <- gameCtx.gridDims.y.toInt - 1 to 0 by -1) remaining match {
       case first :: rest =>
         remaining = rest
-        for ((oldS, newS) <- row(i).zip(row(first))) {
+        for ((oldS, newS) <- gameCtx.row(i).zip(gameCtx.row(first))) {
           oldS.color = newS.color
         }
       case _ =>
