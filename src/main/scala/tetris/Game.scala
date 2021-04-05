@@ -6,7 +6,7 @@ import tetris.datas.{Color, InputKeys, Piece, Pieces, Point}
 
 case class Cell(var color: Color = Color.Black)
 
-case class GameContext(bounds: Point, linesCleared: Int = 0) {
+case class GameContext(bounds: Point, linesCleared: Int = 0, prevKeys: Set[Int] = Set.empty[Int]) {
   val blockWidth: Int          = 20
   val gridDims: Point          = Point(13, bounds.y / blockWidth)
   val leftBorder: Double       = (bounds.x - blockWidth * gridDims.x) / 2
@@ -14,6 +14,9 @@ case class GameContext(bounds: Point, linesCleared: Int = 0) {
 
   def incrementLinesCleard: GameContext =
     this.copy(linesCleared = linesCleared + 1)
+
+  def updateKeyInputs(keys: Set[Int]): GameContext =
+    this.copy(prevKeys = keys)
 }
 
 object GameContext {
@@ -45,7 +48,6 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
   private var nextPiece: Piece    = pieces.randomNext()
   private var currentPiece: Piece = pieces.randomNext()
   private var piecePos            = Point(gameCtx.gridDims.x / 2, 0)
-  private var prevKeys            = Set.empty[Int]
 
   var result: Option[String] = None
 
@@ -88,7 +90,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       piecePos += Point(-1, 0)
     if (keys(InputKeys.KEY_RIGHT) && findCollisions(Point(1, 0)).isEmpty)
       piecePos += Point(1, 0)
-    if (keys(InputKeys.KEY_SPACE) && !prevKeys(InputKeys.KEY_SPACE)) {
+    if (keys(InputKeys.KEY_SPACE) && !gameCtx.prevKeys(InputKeys.KEY_SPACE)) {
       currentPiece = currentPiece.rotate()
       if (findCollisions(Point(0, 0)).nonEmpty) {
         for (_ <- 0 until 3) currentPiece = currentPiece.rotate()
@@ -96,7 +98,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     }
     if (keys(InputKeys.KEY_DOWN)) moveDown()
 
-    prevKeys = keys
+    gameCtx.updateKeyInputs(keys)
 
     if (moveCount > 0) moveCount -= 1
     else {
