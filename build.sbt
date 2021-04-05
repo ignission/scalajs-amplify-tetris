@@ -1,16 +1,5 @@
 name := "tetris"
 
-addCommandAlias("fix", "all compile:scalafix; test:scalafix")
-addCommandAlias("fixCheck", "; compile:scalafix --check; test:scalafix --check")
-addCommandAlias("format", "; scalafmt; test:scalafmt; scalafmtSbt")
-addCommandAlias("formatCheck", "; scalafmtCheck; test:scalafmtCheck; scalafmtSbtCheck")
-addCommandAlias("fixAll", "fix; format")
-addCommandAlias("checkAll", "fixCheck; formatCheck")
-addCommandAlias("devStart", "fastOptJS::startWebpackDevServer")
-addCommandAlias("devStop", "fastOptJS::stopWebpackDevServer")
-addCommandAlias("dev", "~devStart")
-addCommandAlias("dist", "fixAll; fullOptJS::webpack")
-
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
 
 lazy val commonSettings = Seq(
@@ -61,3 +50,14 @@ lazy val root = (project in file("."))
     webpackBundlingMode in fastOptJS := BundlingMode.LibraryOnly(),
     requireJsDomEnv in Test := true
   )
+
+addCommandAlias("fix", "all compile:scalafix; test:scalafix")
+addCommandAlias("fixCheck", "; compile:scalafix --check; test:scalafix --check")
+addCommandAlias("format", "; scalafmt; test:scalafmt; scalafmtSbt")
+addCommandAlias("formatCheck", "; scalafmtCheck; test:scalafmtCheck; scalafmtSbtCheck")
+addCommandAlias("fixAll", "fix; format")
+addCommandAlias("checkAll", "fixCheck; formatCheck")
+addCommandAlias("devStart", "fastOptJS::startWebpackDevServer")
+addCommandAlias("devStop", "fastOptJS::stopWebpackDevServer")
+addCommandAlias("dev", "~devStart")
+addCommandAlias("dist", "fixAll; fullOptJS::webpack")
