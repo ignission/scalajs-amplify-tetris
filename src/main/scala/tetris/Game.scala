@@ -4,6 +4,22 @@ import org.scalajs.dom
 import org.scalajs.dom.CanvasRenderingContext2D
 import tetris.datas.{Color, InputKeys, Piece, Pieces, Point}
 
+case class Cell(var color: Color = Color.Black)
+
+case class GameContext(bounds: Point, linesCleared: Int = 0) {
+  val blockWidth: Int          = 20
+  val gridDims: Point          = Point(13, bounds.y / blockWidth)
+  val leftBorder: Double       = (bounds.x - blockWidth * gridDims.x) / 2
+  val grid: Array[Array[Cell]] = Array.fill(gridDims.x.toInt, gridDims.y.toInt)(Cell())
+
+  def incrementLinesCleard: GameContext =
+    this.copy(linesCleared = linesCleared + 1)
+}
+
+object GameContext {
+  def initialValue(bounds: Point): GameContext = GameContext(bounds)
+}
+
 case class Game(bounds: Point, val resetGame: () => Unit) {
 
   implicit class pimpedContext(val ctx: dom.CanvasRenderingContext2D) {
@@ -25,22 +41,14 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
   private val pieces = Pieces.all
 
+  private var gameCtx             = GameContext.initialValue(bounds)
+  private var moveCount           = 0
+  private var nextPiece: Piece    = pieces.randomNext()
+  private var currentPiece: Piece = pieces.randomNext()
+  private var piecePos            = Point(gameCtx.gridDims.x / 2, 0)
+  private var prevKeys            = Set.empty[Int]
+
   var result: Option[String] = None
-
-  var moveCount           = 0
-  var keyCount            = 0
-  val blockWidth          = 20
-  val gridDims            = Point(13, bounds.y / blockWidth)
-  val leftBorder          = (bounds.x - blockWidth * gridDims.x) / 2
-  var linesCleared        = 0
-  var nextPiece: Piece    = pieces.randomNext()
-  var currentPiece: Piece = pieces.randomNext()
-  var piecePos            = Point(gridDims.x / 2, 0)
-
-  case class Cell(var color: Color = Color.Black)
-
-  val grid     = Array.fill(gridDims.x.toInt, gridDims.y.toInt)(Cell())
-  var prevKeys = Set.empty[Int]
 
   def findCollisions(offset: Point) = {
     val pts = currentPiece.iterator(piecePos).toArray
@@ -48,9 +56,11 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       index <- 0 until pts.length
       (i, j) = pts(index)
       newPt  = Point(i, j) + offset
-      if !newPt.within(Point(0, 0), gridDims) || grid(newPt.x.toInt)(
-        newPt.y.toInt
-      ).color != Color.Black
+      if !newPt.within(Point(0, 0), gameCtx.gridDims) || gameCtx
+        .grid(newPt.x.toInt)(
+          newPt.y.toInt
+        )
+        .color != Color.Black
     } yield ()
   }
 
@@ -60,11 +70,11 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     if (collisions.length > 0) {
       for (index <- 0 until pts.length) {
         val (i, j) = pts(index)
-        grid(i)(j).color = currentPiece.color
+        gameCtx.grid(i)(j).color = currentPiece.color
       }
       currentPiece = nextPiece
       nextPiece = pieces.randomNext()
-      piecePos = Point(gridDims.x / 2, 0)
+      piecePos = Point(gameCtx.gridDims.x / 2, 0)
       if (!findCollisions(Point(0, 0)).isEmpty) {
         result = Some("The board has filled up!")
         resetGame()
@@ -96,50 +106,56 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     }
 
     def row(i: Int) =
-      (0 until gridDims.x.toInt).map(j => grid(j)(i))
+      (0 until gameCtx.gridDims.x.toInt).map(j => gameCtx.grid(j)(i))
 
     var remaining = for {
-      i <- (gridDims.y.toInt - 1 to 0 by -1).toList
+      i <- (gameCtx.gridDims.y.toInt - 1 to 0 by -1).toList
       if !row(i).forall(_.color != Color.Black)
     } yield i
 
-    for (i <- gridDims.y.toInt - 1 to 0 by -1) remaining match {
+    for (i <- gameCtx.gridDims.y.toInt - 1 to 0 by -1) remaining match {
       case first :: rest =>
         remaining = rest
         for ((oldS, newS) <- row(i).zip(row(first))) {
           oldS.color = newS.color
         }
       case _ =>
-        linesCleared += 1
-        for (s <- grid(i)) s.color = Color.Black
+        gameCtx = gameCtx.incrementLinesCleard
+        for (s <- gameCtx.grid(i)) s.color = Color.Black
     }
   }
 
   def draw(implicit ctx: CanvasRenderingContext2D): Unit = {
+    val blockWidth = gameCtx.blockWidth
+
     ctx.fillStyle = Color.Black.value
     ctx.fillRect(0, 0, bounds.x, bounds.y)
 
     ctx.textAlign = "left"
     ctx.fillStyle = Color.White.value
-    ctx.fillText("Lines Cleared: " + linesCleared, leftBorder * 1.3 + gridDims.x * blockWidth, 100)
-    ctx.fillText("Next Block", leftBorder * 1.35 + gridDims.x * blockWidth, 150)
+    ctx.fillText(
+      "Lines Cleared: " + gameCtx.linesCleared,
+      gameCtx.leftBorder * 1.3 + gameCtx.gridDims.x * blockWidth,
+      100
+    )
+    ctx.fillText("Next Block", gameCtx.leftBorder * 1.35 + gameCtx.gridDims.x * blockWidth, 150)
 
     for {
-      i <- 0 until gridDims.x.toInt
-      j <- 0 until gridDims.y.toInt
-    } fillBlock(i, j, grid(i)(j).color)
+      i <- 0 until gameCtx.gridDims.x.toInt
+      j <- 0 until gameCtx.gridDims.y.toInt
+    } fillBlock(i, j, gameCtx.grid(i)(j).color)
 
     draw(currentPiece, piecePos, external = false)
     draw(nextPiece, Point(18, 9), external = true)
 
     ctx.strokeStyle = Color.White.value
     ctx.strokePath(
-      Point(leftBorder, 0),
-      Point(leftBorder, bounds.y)
+      Point(gameCtx.leftBorder, 0),
+      Point(gameCtx.leftBorder, bounds.y)
     )
     ctx.strokePath(
-      Point(bounds.x - leftBorder, 0),
-      Point(bounds.x - leftBorder, bounds.y)
+      Point(bounds.x - gameCtx.leftBorder, 0),
+      Point(bounds.x - gameCtx.leftBorder, bounds.y)
     )
   }
 
@@ -149,7 +165,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     val pts = piece.iterator(pos)
     for (index <- 0 until pts.length) {
       val (i, j) = pts(index)
-      if (Point(i, j).within(Point(0, 0), gridDims) || external)
+      if (Point(i, j).within(Point(0, 0), gameCtx.gridDims) || external)
         fillBlock(i, j, piece.color)
     }
   }
@@ -157,9 +173,11 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
   private def fillBlock(i: Int, j: Int, color: Color)(implicit
       ctx: dom.CanvasRenderingContext2D
   ): Unit = {
+    val blockWidth = gameCtx.blockWidth
+
     ctx.fillStyle = color.replace(255, 128).value
-    ctx.fillRect(leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
+    ctx.fillRect(gameCtx.leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
     ctx.strokeStyle = color.value
-    ctx.strokeRect(leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
+    ctx.strokeRect(gameCtx.leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
   }
 }
