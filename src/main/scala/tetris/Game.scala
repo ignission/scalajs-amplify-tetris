@@ -6,20 +6,54 @@ import tetris.datas.{Color, InputKeys, Piece, Pieces, Point}
 
 case class Cell(var color: Color = Color.Black)
 
+case class Row(cells: IndexedSeq[Cell]) {
+  def cell(i: Int): Cell =
+    cells(i)
+
+  def forall(p: Cell => Boolean): Boolean =
+    cells.forall(p)
+
+  def zip(that: Row): IndexedSeq[(Cell, Cell)] =
+    cells.zip(that.cells)
+
+  def clear(): Row =
+    Row(cells.map(_ => Cell()))
+}
+
+object Row {
+  def gen(num: Int): Row =
+    Row(IndexedSeq.fill(num)(Cell()))
+}
+
+case class Grid(rows: IndexedSeq[Row]) {
+  def row(i: Int): Row =
+    rows(i)
+
+  def cell(x: Int, y: Int): Cell =
+    row(y).cell(x)
+
+  def clearRow(i: Int): Grid = ???
+}
+
+object Grid {
+  def gen(width: Int, height: Int): Grid =
+    Grid(IndexedSeq.fill(height)(Row.gen(width)))
+}
+
 case class GameContext(
     bounds: Point,
-    linesCleared: Int = 0,
-    prevKeys: Set[Int] = Set.empty[Int],
-    var moveCount: Int = 0
+    blockWidth: Int,
+    gridDims: Point,
+    grid: Grid,
+    linesCleared: Int,
+    prevKeys: Set[Int],
+    var moveCount: Int
 ) {
   private final val DEFAULT_MOVE_COUNT = 15
 
-  val blockWidth: Int          = 20
-  val gridDims: Point          = Point(13, bounds.y / blockWidth)
-  val leftBorder: Double       = (bounds.x - blockWidth * gridDims.x) / 2
-  val grid: Array[Array[Cell]] = Array.fill(gridDims.x.toInt, gridDims.y.toInt)(Cell())
+  val leftBorder: Double = (bounds.x - blockWidth * gridDims.x) / 2
 
-  def incrementLinesCleard: GameContext =
+  def incrementLinesCleard(): GameContext =
     this.copy(linesCleared = linesCleared + 1)
 
   def setDefaultMoveCount(): Unit =
@@ -31,13 +65,32 @@ case class GameContext(
   def updateKeyInputs(keys: Set[Int]): GameContext =
     this.copy(prevKeys = keys)
 
-  def row(i: Int): IndexedSeq[Cell] =
-    (0 until gridDims.x.toInt).map(j => grid(j)(i))
+  def row(i: Int): Row =
+    grid.row(i)
 
+  def cell(x: Int, y: Int): Cell =
+    grid.cell(x, y)
+
+  def clearRow(i: Int): GameContext =
+    copy(grid = grid.clearRow(i))
 }
 
 object GameContext {
-  def initialValue(bounds: Point): GameContext = GameContext(bounds)
+  def initialValue(bounds: Point): GameContext = {
+    val blockWidth = 20
+    val gridDims   = Point(13, bounds.y / blockWidth)
+    val grid       = Grid.gen(gridDims.x.toInt, gridDims.y.toInt)
+
+    GameContext(
+      bounds = bounds,
+      blockWidth = blockWidth,
+      gridDims = gridDims,
+      grid = grid,
+      linesCleared = 0,
+      prevKeys = Set.empty[Int],
+      moveCount = 0
+    )
+  }
 }
 
 case class Game(bounds: Point, val resetGame: () => Unit) {
@@ -74,9 +127,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       (i, j) = pts(index)
       newPt  = Point(i, j) + offset
       if !newPt.within(Point(0, 0), gameCtx.gridDims) || gameCtx
-        .grid(newPt.x.toInt)(
-          newPt.y.toInt
-        )
+        .cell(newPt.x.toInt, newPt.y.toInt)
         .color != Color.Black
     } yield ()
   }
@@ -87,7 +138,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     if (collisions.length > 0) {
       for (index <- 0 until pts.length) {
         val (i, j) = pts(index)
-        gameCtx.grid(i)(j).color = currentPiece.color
+        gameCtx.cell(i, j).color = currentPiece.color
       }
       currentPiece = nextPiece
       nextPiece = pieces.randomNext()
@@ -135,8 +186,8 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
           oldS.color = newS.color
         }
       case _ =>
-        gameCtx = gameCtx.incrementLinesCleard
-        for (s <- gameCtx.grid(i)) s.color = Color.Black
+        gameCtx = gameCtx.incrementLinesCleard().clearRow(i)
+      // for (s <- gameCtx.grid(i)) s.color = Color.Black
     }
   }
 
@@ -158,7 +209,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     for {
       i <- 0 until gameCtx.gridDims.x.toInt
       j <- 0 until gameCtx.gridDims.y.toInt
-    } fillBlock(i, j, gameCtx.grid(i)(j).color)
+    } fillBlock(i, j, gameCtx.cell(i, j).color)
 
     draw(currentPiece, piecePos, external = false)
     draw(nextPiece, Point(18, 9), external = true)
