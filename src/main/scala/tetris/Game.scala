@@ -2,7 +2,7 @@ package tetris
 
 import org.scalajs.dom
 import org.scalajs.dom.CanvasRenderingContext2D
-import tetris.datas.{Color, Piece, Pieces, Point}
+import tetris.datas.{Color, InputKeys, Piece, Pieces, Point}
 
 case class Game(bounds: Point, val resetGame: () => Unit) {
 
@@ -22,11 +22,6 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       ctx.stroke()
     }
   }
-
-  private final val KEY_SPACE = 32
-  private final val KEY_LEFT  = 37
-  private final val KEY_RIGHT = 39
-  private final val KEY_DOWN  = 40
 
   private val pieces = Pieces.all
 
@@ -80,17 +75,17 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
   }
 
   def update(keys: Set[Int]): Unit = {
-    if (keys(KEY_LEFT) && findCollisions(Point(-1, 0)).isEmpty)
+    if (keys(InputKeys.KEY_LEFT) && findCollisions(Point(-1, 0)).isEmpty)
       piecePos += Point(-1, 0)
-    if (keys(KEY_RIGHT) && findCollisions(Point(1, 0)).isEmpty)
+    if (keys(InputKeys.KEY_RIGHT) && findCollisions(Point(1, 0)).isEmpty)
       piecePos += Point(1, 0)
-    if (keys(KEY_SPACE) && !prevKeys(KEY_SPACE)) {
+    if (keys(InputKeys.KEY_SPACE) && !prevKeys(InputKeys.KEY_SPACE)) {
       currentPiece = currentPiece.rotate()
       if (findCollisions(Point(0, 0)).nonEmpty) {
         for (_ <- 0 until 3) currentPiece = currentPiece.rotate()
       }
     }
-    if (keys(KEY_DOWN)) moveDown()
+    if (keys(InputKeys.KEY_DOWN)) moveDown()
 
     prevKeys = keys
 

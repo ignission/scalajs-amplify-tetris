@@ -2,7 +2,7 @@ package tetris
 
 import org.scalajs.dom
 import org.scalajs.dom.html
-import tetris.datas.{Color, Point}
+import tetris.datas.{Color, InputKeys, Point}
 
 import scala.collection.mutable
 import scala.scalajs.js
@@ -22,12 +22,12 @@ object App {
 
   canvas.onkeydown = { (e: dom.KeyboardEvent) =>
     keys.add(e.keyCode.toInt)
-    if (Seq(32, 37, 38, 39, 40).contains(e.keyCode.toInt)) e.preventDefault()
+    if (InputKeys.contains(e.keyCode.toInt)) e.preventDefault()
     message = None
   }
   canvas.onkeyup = { (e: dom.KeyboardEvent) =>
     keys.remove(e.keyCode.toInt)
-    if (Seq(32, 37, 38, 39, 40).contains(e.keyCode.toInt)) e.preventDefault()
+    if (InputKeys.contains(e.keyCode.toInt)) e.preventDefault()
   }
 
   canvas.onfocus = { _ => active = true }
