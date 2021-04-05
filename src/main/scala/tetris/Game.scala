@@ -47,11 +47,13 @@ case class GameContext(
     grid: Grid,
     linesCleared: Int,
     prevKeys: Set[Int],
+    piecePos: Point,
     var moveCount: Int
 ) {
   private final val DEFAULT_MOVE_COUNT = 15
 
-  val leftBorder: Double = (bounds.x - blockWidth * gridDims.x) / 2
+  val leftBorder: Double   = (bounds.x - blockWidth * gridDims.x) / 2
+  val startPosition: Point = GameContext.startPosition(gridDims)
 
   def incrementLinesCleard(): GameContext =
     this.copy(linesCleared = linesCleared + 1)
@@ -61,6 +63,12 @@ case class GameContext(
 
   def decrementMoveCount(): Unit =
     moveCount = moveCount - 1
+
+  def resetToStartPoint(): GameContext =
+    copy(piecePos = startPosition)
+
+  def updatePiecePosition(p: Point): GameContext =
+    copy(piecePos = p)
 
   def updateKeyInputs(keys: Set[Int]): GameContext =
     this.copy(prevKeys = keys)
@@ -76,6 +84,10 @@ case class GameContext(
 }
 
 object GameContext {
+
+  def startPosition(gridDims: Point): Point =
+    Point(gridDims.x / 2, 0)
+
   def initialValue(bounds: Point): GameContext = {
     val blockWidth = 20
     val gridDims   = Point(13, bounds.y / blockWidth)
@@ -88,6 +100,7 @@ object GameContext {
       grid = grid,
       linesCleared = 0,
       prevKeys = Set.empty[Int],
+      piecePos = startPosition(gridDims),
       moveCount = 0
     )
   }
@@ -116,12 +129,11 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
   private var gameCtx             = GameContext.initialValue(bounds)
   private var nextPiece: Piece    = pieces.randomNext()
   private var currentPiece: Piece = pieces.randomNext()
-  private var piecePos            = Point(gameCtx.gridDims.x / 2, 0)
 
   var result: Option[String] = None
 
   def findCollisions(offset: Point): IndexedSeq[Unit] = {
-    val pts = currentPiece.iterator(piecePos).toArray
+    val pts = currentPiece.iterator(gameCtx.piecePos).toArray
     for {
       index <- 0 until pts.length
       (i, j) = pts(index)
@@ -134,7 +146,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
   def moveDown(): Unit = {
     val collisions = findCollisions(Point(0, 1))
-    val pts        = currentPiece.iterator(piecePos).toArray
+    val pts        = currentPiece.iterator(gameCtx.piecePos).toArray
     if (collisions.length > 0) {
       for (index <- 0 until pts.length) {
         val (i, j) = pts(index)
@@ -142,21 +154,21 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       }
       currentPiece = nextPiece
       nextPiece = pieces.randomNext()
-      piecePos = Point(gameCtx.gridDims.x / 2, 0)
+      gameCtx = gameCtx.resetToStartPoint()
       if (!findCollisions(Point(0, 0)).isEmpty) {
         result = Some("The board has filled up!")
         resetGame()
       }
     } else {
-      piecePos += Point(0, 1)
+      gameCtx = gameCtx.updatePiecePosition(gameCtx.piecePos + Point(0, 1))
     }
   }
 
   def update(keys: Set[Int]): Unit = {
     if (keys(InputKeys.KEY_LEFT) && findCollisions(Point(-1, 0)).isEmpty)
-      piecePos += Point(-1, 0)
+      gameCtx = gameCtx.updatePiecePosition(gameCtx.piecePos + Point(-1, 0))
     if (keys(InputKeys.KEY_RIGHT) && findCollisions(Point(1, 0)).isEmpty)
-      piecePos += Point(1, 0)
+      gameCtx = gameCtx.updatePiecePosition(gameCtx.piecePos + Point(1, 0))
     if (keys(InputKeys.KEY_SPACE) && !gameCtx.prevKeys(InputKeys.KEY_SPACE)) {
       currentPiece = currentPiece.rotate()
       if (findCollisions(Point(0, 0)).nonEmpty) {
@@ -211,7 +223,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       j <- 0 until gameCtx.gridDims.y.toInt
     } fillBlock(i, j, gameCtx.cell(i, j).color)
 
-    draw(currentPiece, piecePos, external = false)
+    draw(currentPiece, gameCtx.piecePos, external = false)
     draw(nextPiece, Point(18, 9), external = true)
 
     ctx.strokeStyle = Color.White.value
