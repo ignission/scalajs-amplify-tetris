@@ -3,7 +3,7 @@ name := "tetris"
 ThisBuild / scalafixDependencies += "com.github.liancheng" %% "organize-imports" % "0.5.0"
 
 lazy val commonSettings = Seq(
-  version := "0.1.0",
+  version := "0.2.0",
   scalaVersion := "2.13.5",
   scalacOptions ++= List(
     "-deprecation",
