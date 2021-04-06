@@ -13,3 +13,6 @@ RUN set -xe \
   && apt-get install -y sbt \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+RUN set -xe \
+  && npm i -g yarn
