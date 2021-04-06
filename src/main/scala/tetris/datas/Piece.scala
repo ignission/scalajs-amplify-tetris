@@ -6,12 +6,12 @@ case class Piece(value: Seq[Array[Int]], color: Color) {
   val height: Int   = value(0).length
   val center: Point = Point(width - 1, height - 1) / 2
 
-  def iterator(offset: Point = Point(0, 0)): IndexedSeq[(Int, Int)] =
+  def iterator(offset: Point = Point(0, 0)): IndexedSeq[Point] =
     for {
       i <- 0 until value.length
       j <- 0 until value(0).length
       if value(i)(j) != 0
-    } yield (i + offset.x.toInt, j + offset.y.toInt)
+    } yield Point(i + offset.x, j + offset.y)
 
   def rotate(): Piece = {
     val out = Seq.fill(width)(Array.fill(height)(0))

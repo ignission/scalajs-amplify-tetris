@@ -99,8 +99,6 @@ object GameContext {
   }
 }
 
-case class Game(bounds: Point, val resetGame: () => Unit) {
-
   implicit class pimpedContext(val ctx: dom.CanvasRenderingContext2D) {
     def fillCircle(x: Double, y: Double, r: Double) = {
       ctx.beginPath()
@@ -117,49 +115,44 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       ctx.stroke()
     }
   }
+case class Game(bounds: Point, resetGame: () => Unit) {
 
   private var gameCtx = GameContext.initialValue(bounds)
 
   var result: Option[String] = None
 
-  def findCollisions(offset: Point): IndexedSeq[Unit] = {
-    val pts = gameCtx.currentPiece.iterator(gameCtx.piecePos).toArray
-    for {
-      index <- 0 until pts.length
-      (i, j) = pts(index)
-      newPt  = Point(i, j) + offset
+  def hasCollisions(offset: Point): Boolean = {
+    val lines = for {
+      point <- gameCtx.currentPiece.iterator(gameCtx.piecePos)
+      newPt = point + offset
       if !gameCtx.within(newPt) || gameCtx.getCell(newPt).color != Color.Black
     } yield ()
+    lines.nonEmpty
   }
 
-  def moveDown(): Unit = {
-    val collisions = findCollisions(Point(0, 1))
-    val pts        = gameCtx.currentPiece.iterator(gameCtx.piecePos).toArray
-    if (collisions.length > 0) {
-      for (index <- 0 until pts.length) {
-        val (i, j) = pts(index)
-        gameCtx.getCell(i, j).color = gameCtx.currentPiece.color
-      }
+  def moveDown(): Unit =
+    if (hasCollisions(Point(0, 1))) {
+      for {
+        point <- gameCtx.currentPiece.iterator(gameCtx.piecePos)
+      } gameCtx.getCell(point).color = gameCtx.currentPiece.color
+
       gameCtx = gameCtx.genNextPiece()
       gameCtx = gameCtx.resetToStartPoint()
-      if (!findCollisions(Point(0, 0)).isEmpty) {
+      if (hasCollisions(Point(0, 0))) {
         result = Some("The board has filled up!")
         resetGame()
       }
     } else
       gameCtx = gameCtx.moveCurrentPieceToDown()
-  }
 
   def update(keys: Set[Int]): Unit = {
-    if (keys(InputKeys.KEY_LEFT) && findCollisions(Point(-1, 0)).isEmpty)
+    if (keys(InputKeys.KEY_LEFT) && !hasCollisions(Point(-1, 0)))
       gameCtx = gameCtx.moveCurrentPieceToLeft()
-    if (keys(InputKeys.KEY_RIGHT) && findCollisions(Point(1, 0)).isEmpty)
+    if (keys(InputKeys.KEY_RIGHT) && !hasCollisions(Point(1, 0)))
       gameCtx = gameCtx.moveCurrentPieceToRight()
     if (keys(InputKeys.KEY_SPACE) && !gameCtx.prevKeys(InputKeys.KEY_SPACE)) {
       gameCtx = gameCtx.rotatePiece()
-      if (findCollisions(Point(0, 0)).nonEmpty) {
-        gameCtx = gameCtx.rotatePiece1Lap()
-      }
+      if (hasCollisions(Point(0, 0))) gameCtx = gameCtx.rotatePiece1Lap()
     }
     if (keys(InputKeys.KEY_DOWN)) moveDown()
 
@@ -225,14 +218,16 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
   def draw(piece: Piece, pos: Point, external: Boolean)(implicit
       ctx: dom.CanvasRenderingContext2D
-  ): Unit = {
-    val pts = piece.iterator(pos)
-    for (index <- 0 until pts.length) {
-      val (i, j) = pts(index)
-      if (gameCtx.within(Point(i, j)) || external)
-        fillBlock(i, j, piece.color)
-    }
-  }
+  ): Unit =
+    for {
+      point <- piece.iterator(pos)
+      if gameCtx.within(point) || external
+    } fillBlock(point, piece.color)
+
+  private def fillBlock(point: Point, color: Color)(implicit
+      ctx: dom.CanvasRenderingContext2D
+  ): Unit =
+    fillBlock(point.x.toInt, point.y.toInt, color)
 
   private def fillBlock(i: Int, j: Int, color: Color)(implicit
       ctx: dom.CanvasRenderingContext2D
