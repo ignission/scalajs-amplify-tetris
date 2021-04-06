@@ -1,6 +1,5 @@
 package tetris
 
-import org.scalajs.dom
 import org.scalajs.dom.CanvasRenderingContext2D
 import tetris.datas._
 
@@ -99,22 +98,6 @@ object GameContext {
   }
 }
 
-  implicit class pimpedContext(val ctx: dom.CanvasRenderingContext2D) {
-    def fillCircle(x: Double, y: Double, r: Double) = {
-      ctx.beginPath()
-      ctx.arc(x, y, r, 0, math.Pi * 2)
-      ctx.fill()
-    }
-
-    def strokePath(points: Point*) = {
-      ctx.beginPath()
-      ctx.moveTo(points.last.x, points.last.y)
-      for (p <- points) {
-        ctx.lineTo(p.x, p.y)
-      }
-      ctx.stroke()
-    }
-  }
 case class Game(bounds: Point, resetGame: () => Unit) {
 
   private var gameCtx = GameContext.initialValue(bounds)
@@ -182,11 +165,57 @@ case class Game(bounds: Point, resetGame: () => Unit) {
     }
   }
 
+  implicit class PimpedContext(val ctx: CanvasRenderingContext2D) {
+    def strokePath(points: Point*) = {
+      ctx.beginPath()
+      ctx.moveTo(points.last.x, points.last.y)
+      for (p <- points) {
+        ctx.lineTo(p.x, p.y)
+      }
+      ctx.stroke()
+    }
+  }
+
   def draw(implicit ctx: CanvasRenderingContext2D): Unit = {
+    fillBackground(ctx)
+    drawGameStatus(ctx)
+    drawNextBlock(ctx)
+    draw(gameCtx.currentPiece, gameCtx.piecePos, external = false)
+    draw(gameCtx.nextPiece, Point(18, 9), external = true)
+    drawVerticalLines(ctx)
+  }
+
+  private def draw(piece: Piece, pos: Point, external: Boolean)(implicit
+      ctx: CanvasRenderingContext2D
+  ): Unit =
+    for {
+      point <- piece.iterator(pos)
+      if gameCtx.within(point) || external
+    } fillBlock(point, piece.color)
+
+  private def fillBlock(point: Point, color: Color)(implicit
+      ctx: CanvasRenderingContext2D
+  ): Unit =
+    fillBlock(point.x.toInt, point.y.toInt, color)
+
+  private def fillBlock(i: Int, j: Int, color: Color)(implicit
+      ctx: CanvasRenderingContext2D
+  ): Unit = {
     val blockWidth = gameCtx.blockWidth
 
+    ctx.fillStyle = color.replace(255, 128).value
+    ctx.fillRect(gameCtx.leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
+    ctx.strokeStyle = color.value
+    ctx.strokeRect(gameCtx.leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
+  }
+
+  private def fillBackground(implicit ctx: CanvasRenderingContext2D): Unit = {
     ctx.fillStyle = Color.Black.value
     ctx.fillRect(0, 0, bounds.x, bounds.y)
+  }
+
+  private def drawGameStatus(implicit ctx: CanvasRenderingContext2D): Unit = {
+    val blockWidth = gameCtx.blockWidth
 
     ctx.textAlign = "left"
     ctx.fillStyle = Color.White.value
@@ -195,16 +224,21 @@ case class Game(bounds: Point, resetGame: () => Unit) {
       gameCtx.leftBorder * 1.3 + gameCtx.gridDims.x * blockWidth,
       100
     )
-    ctx.fillText("Next Block", gameCtx.leftBorder * 1.35 + gameCtx.gridDims.x * blockWidth, 150)
+  }
 
+  private def drawNextBlock(implicit ctx: CanvasRenderingContext2D): Unit = {
+    ctx.fillText(
+      "Next Block",
+      gameCtx.leftBorder * 1.35 + gameCtx.gridDims.x * gameCtx.blockWidth,
+      150
+    )
     for {
       i <- 0 until gameCtx.gridDims.x.toInt
       j <- 0 until gameCtx.gridDims.y.toInt
     } fillBlock(i, j, gameCtx.getCell(i, j).color)
+  }
 
-    draw(gameCtx.currentPiece, gameCtx.piecePos, external = false)
-    draw(gameCtx.nextPiece, Point(18, 9), external = true)
-
+  private def drawVerticalLines(ctx: CanvasRenderingContext2D): Unit = {
     ctx.strokeStyle = Color.White.value
     ctx.strokePath(
       Point(gameCtx.leftBorder, 0),
@@ -214,29 +248,5 @@ case class Game(bounds: Point, resetGame: () => Unit) {
       Point(bounds.x - gameCtx.leftBorder, 0),
       Point(bounds.x - gameCtx.leftBorder, bounds.y)
     )
-  }
-
-  def draw(piece: Piece, pos: Point, external: Boolean)(implicit
-      ctx: dom.CanvasRenderingContext2D
-  ): Unit =
-    for {
-      point <- piece.iterator(pos)
-      if gameCtx.within(point) || external
-    } fillBlock(point, piece.color)
-
-  private def fillBlock(point: Point, color: Color)(implicit
-      ctx: dom.CanvasRenderingContext2D
-  ): Unit =
-    fillBlock(point.x.toInt, point.y.toInt, color)
-
-  private def fillBlock(i: Int, j: Int, color: Color)(implicit
-      ctx: dom.CanvasRenderingContext2D
-  ): Unit = {
-    val blockWidth = gameCtx.blockWidth
-
-    ctx.fillStyle = color.replace(255, 128).value
-    ctx.fillRect(gameCtx.leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
-    ctx.strokeStyle = color.value
-    ctx.strokeRect(gameCtx.leftBorder + i * blockWidth, 0 + j * blockWidth, blockWidth, blockWidth)
   }
 }
