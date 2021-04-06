@@ -1,0 +1,17 @@
+{
+  "projectName": "scalajstetris",
+  "version": "3.0",
+  "frontend": "javascript",
+  "javascript": {
+    "framework": "none",
+    "config": {
+      "SourceDir": "src",
+      "DistributionDir": "dist",
+      "BuildCommand": "make dist",
+      "StartCommand": "sbt dev"
+    }
+  },
+  "providers": [
+    "awscloudformation"
+  ]
+}
