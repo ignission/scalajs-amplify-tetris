@@ -22,7 +22,7 @@ object Row {
     Row(IndexedSeq.fill(num)(Cell()))
 }
 
-case class Grid(rows: IndexedSeq[Row]) {
+case class Grid(width: Int, height: Int, rows: IndexedSeq[Row]) {
   def row(i: Int): Row =
     rows(i)
 
@@ -31,6 +31,8 @@ case class Grid(rows: IndexedSeq[Row]) {
 
   def clearRow(i: Int): Grid =
     Grid(
+      width,
+      height,
       for {
         (r, index) <- rows.zipWithIndex
       } yield if (i == index) r.clear() else r
@@ -39,5 +41,5 @@ case class Grid(rows: IndexedSeq[Row]) {
 
 object Grid {
   def gen(width: Int, height: Int): Grid =
-    Grid(IndexedSeq.fill(height)(Row.gen(width)))
+    Grid(width, height, IndexedSeq.fill(height)(Row.gen(width)))
 }

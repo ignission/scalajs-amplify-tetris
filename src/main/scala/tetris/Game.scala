@@ -6,7 +6,7 @@ import tetris.datas._
 case class GameContext(
     bounds: Point,
     blockWidth: Int,
-    gridDims: Point,
+    private val gridDims: Point,
     grid: Grid,
     linesCleared: Int,
     prevKeys: Set[Int],
@@ -150,11 +150,11 @@ case class Game(bounds: Point, resetGame: () => Unit) {
     }
 
     var remaining = for {
-      i <- (gameCtx.gridDims.y.toInt - 1 to 0 by -1).toList
+      i <- (gameCtx.grid.height - 1 to 0 by -1).toList
       if !gameCtx.getRow(i).hasBlock
     } yield i
 
-    for (i <- gameCtx.gridDims.y.toInt - 1 to 0 by -1) remaining match {
+    for (i <- gameCtx.grid.height - 1 to 0 by -1) remaining match {
       case first :: rest =>
         remaining = rest
         for ((oldS, newS) <- gameCtx.getRow(i).zip(gameCtx.getRow(first))) {
@@ -221,7 +221,7 @@ case class Game(bounds: Point, resetGame: () => Unit) {
     ctx.fillStyle = Color.White.value
     ctx.fillText(
       "Lines Cleared: " + gameCtx.linesCleared,
-      gameCtx.leftBorder * 1.3 + gameCtx.gridDims.x * blockWidth,
+      gameCtx.leftBorder * 1.3 + gameCtx.grid.width * blockWidth,
       100
     )
   }
@@ -229,12 +229,12 @@ case class Game(bounds: Point, resetGame: () => Unit) {
   private def drawNextBlock(implicit ctx: CanvasRenderingContext2D): Unit = {
     ctx.fillText(
       "Next Block",
-      gameCtx.leftBorder * 1.35 + gameCtx.gridDims.x * gameCtx.blockWidth,
+      gameCtx.leftBorder * 1.35 + gameCtx.grid.width * gameCtx.blockWidth,
       150
     )
     for {
-      i <- 0 until gameCtx.gridDims.x.toInt
-      j <- 0 until gameCtx.gridDims.y.toInt
+      i <- 0 until gameCtx.grid.width
+      j <- 0 until gameCtx.grid.height
     } fillBlock(i, j, gameCtx.getCell(i, j).color)
   }
 
