@@ -75,6 +75,15 @@ case class GameContext(
   def updatePiecePosition(p: Point): GameContext =
     copy(piecePos = p)
 
+  def moveCurrentPieceToDown(): GameContext =
+    copy(piecePos = piecePos + Point(0, 1))
+
+  def moveCurrentPieceToLeft(): GameContext =
+    copy(piecePos = piecePos + Point(-1, 0))
+
+  def moveCurrentPieceToRight(): GameContext =
+    copy(piecePos = piecePos + Point(1, 0))
+
   def updateKeyInputs(keys: Set[Int]): GameContext =
     copy(prevKeys = keys)
 
@@ -166,15 +175,15 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
         resetGame()
       }
     } else {
-      gameCtx = gameCtx.updatePiecePosition(gameCtx.piecePos + Point(0, 1))
+      gameCtx = gameCtx.moveCurrentPieceToDown()
     }
   }
 
   def update(keys: Set[Int]): Unit = {
     if (keys(InputKeys.KEY_LEFT) && findCollisions(Point(-1, 0)).isEmpty)
-      gameCtx = gameCtx.updatePiecePosition(gameCtx.piecePos + Point(-1, 0))
+      gameCtx = gameCtx.moveCurrentPieceToLeft()
     if (keys(InputKeys.KEY_RIGHT) && findCollisions(Point(1, 0)).isEmpty)
-      gameCtx = gameCtx.updatePiecePosition(gameCtx.piecePos + Point(1, 0))
+      gameCtx = gameCtx.moveCurrentPieceToRight()
     if (keys(InputKeys.KEY_SPACE) && !gameCtx.prevKeys(InputKeys.KEY_SPACE)) {
       currentPiece = currentPiece.rotate()
       if (findCollisions(Point(0, 0)).nonEmpty) {
@@ -245,7 +254,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
   def draw(piece: Piece, pos: Point, external: Boolean)(implicit
       ctx: dom.CanvasRenderingContext2D
-  ) = {
+  ): Unit = {
     val pts = piece.iterator(pos)
     for (index <- 0 until pts.length) {
       val (i, j) = pts(index)
