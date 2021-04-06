@@ -19,11 +19,9 @@ case class Piece(value: Seq[Array[Int]], color: Color) {
     for {
       w <- 0 until width
       h <- 0 until height
-    } {
-      val centered = Point(w, h) - center
-      val rotated  = Point(centered.y * -1, centered.x * 1) + center
-      out(rotated.x.toInt)(rotated.y.toInt) = value(w)(h)
-    }
+      centered = Point(w, h) - center
+      rotated  = Point(centered.y * -1, centered.x * 1) + center
+    } out(rotated.x.toInt)(rotated.y.toInt) = value(w)(h)
 
     Piece(out, color)
   }
