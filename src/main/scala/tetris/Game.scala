@@ -54,6 +54,8 @@ case class GameContext(
     linesCleared: Int,
     prevKeys: Set[Int],
     piecePos: Point,
+    currentPiece: Piece,
+    nextPiece: Piece,
     var moveCount: Int
 ) {
   private final val DEFAULT_MOVE_COUNT = 15
@@ -99,6 +101,16 @@ case class GameContext(
 
   def clearRow(i: Int): GameContext =
     copy(grid = grid.clearRow(i))
+
+  def genNextPiece(): GameContext =
+    copy(currentPiece = nextPiece, nextPiece = Pieces.all.randomNext())
+
+  def rotatePiece(): GameContext =
+    copy(currentPiece = currentPiece.rotate())
+
+  def rotatePiece1Lap(): GameContext =
+    copy(currentPiece = currentPiece.rotate1Lap())
+
 }
 
 object GameContext {
@@ -110,6 +122,7 @@ object GameContext {
     val blockWidth = 20
     val gridDims   = Point(13, bounds.y / blockWidth)
     val grid       = Grid.gen(gridDims.x.toInt, gridDims.y.toInt)
+    val pieces     = Pieces.all
 
     GameContext(
       bounds = bounds,
@@ -119,6 +132,8 @@ object GameContext {
       linesCleared = 0,
       prevKeys = Set.empty[Int],
       piecePos = startPosition(gridDims),
+      nextPiece = pieces.randomNext(),
+      currentPiece = pieces.randomNext(),
       moveCount = 0
     )
   }
@@ -143,16 +158,12 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     }
   }
 
-  private val pieces = Pieces.all
-
-  private var gameCtx             = GameContext.initialValue(bounds)
-  private var nextPiece: Piece    = pieces.randomNext()
-  private var currentPiece: Piece = pieces.randomNext()
+  private var gameCtx = GameContext.initialValue(bounds)
 
   var result: Option[String] = None
 
   def findCollisions(offset: Point): IndexedSeq[Unit] = {
-    val pts = currentPiece.iterator(gameCtx.piecePos).toArray
+    val pts = gameCtx.currentPiece.iterator(gameCtx.piecePos).toArray
     for {
       index <- 0 until pts.length
       (i, j) = pts(index)
@@ -164,14 +175,13 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
   def moveDown(): Unit = {
     val collisions = findCollisions(Point(0, 1))
-    val pts        = currentPiece.iterator(gameCtx.piecePos).toArray
+    val pts        = gameCtx.currentPiece.iterator(gameCtx.piecePos).toArray
     if (collisions.length > 0) {
       for (index <- 0 until pts.length) {
         val (i, j) = pts(index)
-        gameCtx.getCell(i, j).color = currentPiece.color
+        gameCtx.getCell(i, j).color = gameCtx.currentPiece.color
       }
-      currentPiece = nextPiece
-      nextPiece = pieces.randomNext()
+      gameCtx = gameCtx.genNextPiece()
       gameCtx = gameCtx.resetToStartPoint()
       if (!findCollisions(Point(0, 0)).isEmpty) {
         result = Some("The board has filled up!")
@@ -188,9 +198,9 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     if (keys(InputKeys.KEY_RIGHT) && findCollisions(Point(1, 0)).isEmpty)
       gameCtx = gameCtx.moveCurrentPieceToRight()
     if (keys(InputKeys.KEY_SPACE) && !gameCtx.prevKeys(InputKeys.KEY_SPACE)) {
-      currentPiece = currentPiece.rotate()
+      gameCtx = gameCtx.rotatePiece()
       if (findCollisions(Point(0, 0)).nonEmpty) {
-        currentPiece = currentPiece.rotate1Lap()
+        gameCtx = gameCtx.rotatePiece1Lap()
       }
     }
     if (keys(InputKeys.KEY_DOWN)) moveDown()
@@ -241,8 +251,8 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       j <- 0 until gameCtx.gridDims.y.toInt
     } fillBlock(i, j, gameCtx.getCell(i, j).color)
 
-    draw(currentPiece, gameCtx.piecePos, external = false)
-    draw(nextPiece, Point(18, 9), external = true)
+    draw(gameCtx.currentPiece, gameCtx.piecePos, external = false)
+    draw(gameCtx.nextPiece, Point(18, 9), external = true)
 
     ctx.strokeStyle = Color.White.value
     ctx.strokePath(
