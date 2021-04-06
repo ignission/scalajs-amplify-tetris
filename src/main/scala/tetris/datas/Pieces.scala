@@ -2,13 +2,6 @@ package tetris.datas
 
 import scala.util.Random
 
-case class Pieces(values: Seq[Piece]) {
-  val length: Int = values.length
-
-  def randomNext(): Piece =
-    values(Random.nextInt(values.length))
-}
-
 object Pieces {
   val piece1: Piece = Piece(
     Seq(
@@ -67,7 +60,7 @@ object Pieces {
     Color.Yellow
   )
 
-  val all = Pieces(
+  val all: Seq[Piece] =
     Seq(
       piece1,
       piece2,
@@ -77,5 +70,7 @@ object Pieces {
       piece6,
       piece7
     )
-  )
+
+  def randomNext(): Piece =
+    all(Random.nextInt(all.length))
 }

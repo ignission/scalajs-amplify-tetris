@@ -57,7 +57,7 @@ case class GameContext(
     copy(grid = grid.clearRow(i))
 
   def genNextPiece(): GameContext =
-    copy(currentPiece = nextPiece, nextPiece = Pieces.all.randomNext())
+    copy(currentPiece = nextPiece, nextPiece = Pieces.randomNext())
 
   def rotatePiece(): GameContext =
     copy(currentPiece = currentPiece.rotate())
@@ -78,7 +78,6 @@ object GameContext {
     val blockWidth = 20
     val gridDims   = Point(13, bounds.y / blockWidth)
     val grid       = Grid.gen(gridDims.x.toInt, gridDims.y.toInt)
-    val pieces     = Pieces.all
 
     GameContext(
       bounds = bounds,
@@ -88,8 +87,8 @@ object GameContext {
       linesCleared = 0,
       prevKeys = Set.empty[Int],
       piecePos = startPosition(gridDims),
-      nextPiece = pieces.randomNext(),
-      currentPiece = pieces.randomNext(),
+      nextPiece = Pieces.randomNext(),
+      currentPiece = Pieces.randomNext(),
       moveCount = 0
     )
   }
