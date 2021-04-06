@@ -111,6 +111,8 @@ case class GameContext(
   def rotatePiece1Lap(): GameContext =
     copy(currentPiece = currentPiece.rotate1Lap())
 
+  def within(p: Point): Boolean =
+    p.within(Point(0, 0), gridDims)
 }
 
 object GameContext {
@@ -168,8 +170,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       index <- 0 until pts.length
       (i, j) = pts(index)
       newPt  = Point(i, j) + offset
-      if !newPt
-        .within(Point(0, 0), gameCtx.gridDims) || gameCtx.getCell(newPt).color != Color.Black
+      if !gameCtx.within(newPt) || gameCtx.getCell(newPt).color != Color.Black
     } yield ()
   }
 
@@ -271,7 +272,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     val pts = piece.iterator(pos)
     for (index <- 0 until pts.length) {
       val (i, j) = pts(index)
-      if (Point(i, j).within(Point(0, 0), gameCtx.gridDims) || external)
+      if (gameCtx.within(Point(i, j)) || external)
         fillBlock(i, j, piece.color)
     }
   }
