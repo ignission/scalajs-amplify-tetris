@@ -188,7 +188,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     if (keys(InputKeys.KEY_SPACE) && !gameCtx.prevKeys(InputKeys.KEY_SPACE)) {
       currentPiece = currentPiece.rotate()
       if (findCollisions(Point(0, 0)).nonEmpty) {
-        for (_ <- 0 until 3) currentPiece = currentPiece.rotate()
+        currentPiece = currentPiece.rotate1Lap()
       }
     }
     if (keys(InputKeys.KEY_DOWN)) moveDown()

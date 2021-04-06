@@ -28,6 +28,9 @@ case class Piece(value: Seq[Array[Int]], color: Color) {
     Piece(out, color)
   }
 
+  def rotate1Lap(): Piece =
+    (0 until 3).foldLeft(this)((item, _) => item.rotate())
+
   override def toString(): String =
     value
       .map(line => "[" + line.mkString(" ") + "]")
