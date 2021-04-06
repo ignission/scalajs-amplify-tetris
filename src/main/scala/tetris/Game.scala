@@ -88,11 +88,14 @@ case class GameContext(
   def updateKeyInputs(keys: Set[Int]): GameContext =
     copy(prevKeys = keys)
 
-  def row(i: Int): Row =
+  def getRow(i: Int): Row =
     grid.row(i)
 
-  def cell(x: Int, y: Int): Cell =
+  def getCell(x: Int, y: Int): Cell =
     grid.cell(x, y)
+
+  def getCell(p: Point): Cell =
+    getCell(p.x.toInt, p.y.toInt)
 
   def clearRow(i: Int): GameContext =
     copy(grid = grid.clearRow(i))
@@ -154,9 +157,8 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
       index <- 0 until pts.length
       (i, j) = pts(index)
       newPt  = Point(i, j) + offset
-      if !newPt.within(Point(0, 0), gameCtx.gridDims) || gameCtx
-        .cell(newPt.x.toInt, newPt.y.toInt)
-        .color != Color.Black
+      if !newPt
+        .within(Point(0, 0), gameCtx.gridDims) || gameCtx.getCell(newPt).color != Color.Black
     } yield ()
   }
 
@@ -166,7 +168,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     if (collisions.length > 0) {
       for (index <- 0 until pts.length) {
         val (i, j) = pts(index)
-        gameCtx.cell(i, j).color = currentPiece.color
+        gameCtx.getCell(i, j).color = currentPiece.color
       }
       currentPiece = nextPiece
       nextPiece = pieces.randomNext()
@@ -205,13 +207,13 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
     var remaining = for {
       i <- (gameCtx.gridDims.y.toInt - 1 to 0 by -1).toList
-      if !gameCtx.row(i).hasBlock
+      if !gameCtx.getRow(i).hasBlock
     } yield i
 
     for (i <- gameCtx.gridDims.y.toInt - 1 to 0 by -1) remaining match {
       case first :: rest =>
         remaining = rest
-        for ((oldS, newS) <- gameCtx.row(i).zip(gameCtx.row(first))) {
+        for ((oldS, newS) <- gameCtx.getRow(i).zip(gameCtx.getRow(first))) {
           oldS.color = newS.color
         }
       case _ =>
@@ -237,7 +239,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
     for {
       i <- 0 until gameCtx.gridDims.x.toInt
       j <- 0 until gameCtx.gridDims.y.toInt
-    } fillBlock(i, j, gameCtx.cell(i, j).color)
+    } fillBlock(i, j, gameCtx.getCell(i, j).color)
 
     draw(currentPiece, gameCtx.piecePos, external = false)
     draw(nextPiece, Point(18, 9), external = true)
