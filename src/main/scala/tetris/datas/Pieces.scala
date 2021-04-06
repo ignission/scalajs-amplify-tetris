@@ -12,10 +12,10 @@ case class Pieces(values: Seq[Piece]) {
 object Pieces {
   val piece1: Piece = Piece(
     Seq(
-      Array(0, 1, 0, 0),
-      Array(0, 1, 0, 0),
-      Array(0, 1, 0, 0),
-      Array(0, 1, 0, 0)
+      Array(0, 0, 0, 0),
+      Array(1, 1, 1, 1),
+      Array(0, 0, 0, 0),
+      Array(0, 0, 0, 0)
     ),
     Color.White
   )
@@ -28,41 +28,41 @@ object Pieces {
   )
   val piece3: Piece = Piece(
     Seq(
-      Array(1, 1, 0),
+      Array(0, 0, 1),
       Array(0, 1, 1),
-      Array(0, 0, 0)
+      Array(0, 1, 0)
     ),
     Color.Green
   )
   val piece4: Piece = Piece(
     Seq(
-      Array(0, 1, 1),
+      Array(1, 0, 0),
       Array(1, 1, 0),
-      Array(0, 0, 0)
+      Array(0, 1, 0)
     ),
     Color.Blue
   )
   val piece5: Piece = Piece(
     Seq(
       Array(0, 1, 0),
-      Array(1, 1, 1),
-      Array(0, 0, 0)
+      Array(1, 1, 0),
+      Array(0, 1, 0)
     ),
     Color.Cyan
   )
   val piece6: Piece = Piece(
     Seq(
-      Array(0, 1, 0),
-      Array(0, 1, 0),
-      Array(1, 1, 0)
+      Array(0, 0, 0),
+      Array(1, 1, 1),
+      Array(0, 0, 1)
     ),
     Color.Magenta
   )
   val piece7: Piece = Piece(
     Seq(
-      Array(0, 1, 0),
-      Array(0, 1, 0),
-      Array(0, 1, 1)
+      Array(0, 0, 1),
+      Array(1, 1, 1),
+      Array(0, 0, 0)
     ),
     Color.Yellow
   )
