@@ -7,11 +7,12 @@ import tetris.datas.{Color, InputKeys, Piece, Pieces, Point}
 case class Cell(var color: Color = Color.Black)
 
 case class Row(cells: IndexedSeq[Cell]) {
+
+  def hasBlock: Boolean =
+    cells.forall(_.color != Color.Black)
+
   def cell(i: Int): Cell =
     cells(i)
-
-  def forall(p: Cell => Boolean): Boolean =
-    cells.forall(p)
 
   def zip(that: Row): IndexedSeq[(Cell, Cell)] =
     cells.zip(that.cells)
@@ -204,7 +205,7 @@ case class Game(bounds: Point, val resetGame: () => Unit) {
 
     var remaining = for {
       i <- (gameCtx.gridDims.y.toInt - 1 to 0 by -1).toList
-      if !gameCtx.row(i).forall(_.color != Color.Black)
+      if !gameCtx.row(i).hasBlock
     } yield i
 
     for (i <- gameCtx.gridDims.y.toInt - 1 to 0 by -1) remaining match {
