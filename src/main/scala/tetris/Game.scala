@@ -61,7 +61,7 @@ case class GameContext(
   val startPosition: Point = GameContext.startPosition(gridDims)
 
   def incrementLinesCleard(): GameContext =
-    this.copy(linesCleared = linesCleared + 1)
+    copy(linesCleared = linesCleared + 1)
 
   def setDefaultMoveCount(): Unit =
     moveCount = DEFAULT_MOVE_COUNT
@@ -76,7 +76,7 @@ case class GameContext(
     copy(piecePos = p)
 
   def updateKeyInputs(keys: Set[Int]): GameContext =
-    this.copy(prevKeys = keys)
+    copy(prevKeys = keys)
 
   def row(i: Int): Row =
     grid.row(i)
