@@ -5,9 +5,7 @@ import tetris.datas._
 
 case class Game(bounds: Point, resetGame: () => Unit) {
 
-  private var gameCtx = GameContext.initialValue(bounds)
-
-  var result: Option[String] = None
+  var gameCtx = GameContext.initialValue(bounds)
 
   def hasCollisions(offset: Point): Boolean = {
     val lines = for {
@@ -27,7 +25,7 @@ case class Game(bounds: Point, resetGame: () => Unit) {
       gameCtx = gameCtx.genNextPiece()
       gameCtx = gameCtx.resetToStartPoint()
       if (hasCollisions(Point(0, 0))) {
-        result = Some("The board has filled up!")
+        gameCtx = gameCtx.updateSuccess("The board has filled up!")
         resetGame()
       }
     } else

@@ -34,7 +34,7 @@ object App {
   canvas.onblur = { _ => active = false }
 
   def resetGame(): Unit = {
-    message = game.result
+    message = game.gameCtx.result
     println("MESSAGE " + message)
     game = Game(bounds, () => resetGame())
   }

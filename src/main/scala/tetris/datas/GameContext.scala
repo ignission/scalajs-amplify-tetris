@@ -10,6 +10,7 @@ case class GameContext(
     piecePos: Point,
     currentPiece: Piece,
     nextPiece: Piece,
+    result: Option[String],
     var moveCount: Int
 ) {
   private final val DEFAULT_MOVE_COUNT = 15
@@ -67,6 +68,9 @@ case class GameContext(
 
   def within(p: Point): Boolean =
     p.within(Point(0, 0), gridDims)
+
+  def updateSuccess(message: String): GameContext =
+    copy(result = Some(message))
 }
 
 object GameContext {
@@ -89,6 +93,7 @@ object GameContext {
       piecePos = startPosition(gridDims),
       nextPiece = Pieces.randomNext(),
       currentPiece = Pieces.randomNext(),
+      result = None,
       moveCount = 0
     )
   }
