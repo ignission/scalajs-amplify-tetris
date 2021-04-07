@@ -16,6 +16,10 @@ Try out the [Live DEMO](https://tetris.ignission.tech/)(click the black backgrou
 
 You can enjoy at `http://localhost:9000`
 
+## Notes
+
+I tried once to be able to play online, but there was no aws-amplify facade, so I gave up!
+
 ## References
 
 Super thanks!
