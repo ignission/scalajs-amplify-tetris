@@ -1,5 +1,11 @@
 type User @model {
   id: ID!
   name: String!
+  gameId: ID!
+  game: Game @connection(fields: ["gameId"])
 }
 
+type Game @model {
+  id: ID!
+  name: String!
+}

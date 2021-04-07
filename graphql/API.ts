@@ -5,10 +5,12 @@
 export type CreateUserInput = {
   id?: string | null,
   name: string,
+  gameId: string,
 };
 
 export type ModelUserConditionInput = {
   name?: ModelStringInput | null,
+  gameId?: ModelIDInput | null,
   and?: Array< ModelUserConditionInput | null > | null,
   or?: Array< ModelUserConditionInput | null > | null,
   not?: ModelUserConditionInput | null,
@@ -54,31 +56,6 @@ export type ModelSizeInput = {
   between?: Array< number | null > | null,
 };
 
-export type User = {
-  __typename: "User",
-  id?: string,
-  name?: string,
-  createdAt?: string,
-  updatedAt?: string,
-};
-
-export type UpdateUserInput = {
-  id: string,
-  name?: string | null,
-};
-
-export type DeleteUserInput = {
-  id?: string | null,
-};
-
-export type ModelUserFilterInput = {
-  id?: ModelIDInput | null,
-  name?: ModelStringInput | null,
-  and?: Array< ModelUserFilterInput | null > | null,
-  or?: Array< ModelUserFilterInput | null > | null,
-  not?: ModelUserFilterInput | null,
-};
-
 export type ModelIDInput = {
   ne?: string | null,
   eq?: string | null,
@@ -95,9 +72,81 @@ export type ModelIDInput = {
   size?: ModelSizeInput | null,
 };
 
+export type User = {
+  __typename: "User",
+  id?: string,
+  name?: string,
+  gameId?: string,
+  game?: Game,
+  createdAt?: string,
+  updatedAt?: string,
+};
+
+export type Game = {
+  __typename: "Game",
+  id?: string,
+  name?: string,
+  createdAt?: string,
+  updatedAt?: string,
+};
+
+export type UpdateUserInput = {
+  id: string,
+  name?: string | null,
+  gameId?: string | null,
+};
+
+export type DeleteUserInput = {
+  id?: string | null,
+};
+
+export type CreateGameInput = {
+  id?: string | null,
+  name: string,
+};
+
+export type ModelGameConditionInput = {
+  name?: ModelStringInput | null,
+  and?: Array< ModelGameConditionInput | null > | null,
+  or?: Array< ModelGameConditionInput | null > | null,
+  not?: ModelGameConditionInput | null,
+};
+
+export type UpdateGameInput = {
+  id: string,
+  name?: string | null,
+};
+
+export type DeleteGameInput = {
+  id?: string | null,
+};
+
+export type ModelUserFilterInput = {
+  id?: ModelIDInput | null,
+  name?: ModelStringInput | null,
+  gameId?: ModelIDInput | null,
+  and?: Array< ModelUserFilterInput | null > | null,
+  or?: Array< ModelUserFilterInput | null > | null,
+  not?: ModelUserFilterInput | null,
+};
+
 export type ModelUserConnection = {
   __typename: "ModelUserConnection",
   items?:  Array<User | null > | null,
+  nextToken?: string | null,
+};
+
+export type ModelGameFilterInput = {
+  id?: ModelIDInput | null,
+  name?: ModelStringInput | null,
+  and?: Array< ModelGameFilterInput | null > | null,
+  or?: Array< ModelGameFilterInput | null > | null,
+  not?: ModelGameFilterInput | null,
+};
+
+export type ModelGameConnection = {
+  __typename: "ModelGameConnection",
+  items?:  Array<Game | null > | null,
   nextToken?: string | null,
 };
 
@@ -111,6 +160,14 @@ export type CreateUserMutation = {
     __typename: "User",
     id: string,
     name: string,
+    gameId: string,
+    game?:  {
+      __typename: "Game",
+      id: string,
+      name: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -126,6 +183,14 @@ export type UpdateUserMutation = {
     __typename: "User",
     id: string,
     name: string,
+    gameId: string,
+    game?:  {
+      __typename: "Game",
+      id: string,
+      name: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -139,6 +204,59 @@ export type DeleteUserMutationVariables = {
 export type DeleteUserMutation = {
   deleteUser?:  {
     __typename: "User",
+    id: string,
+    name: string,
+    gameId: string,
+    game?:  {
+      __typename: "Game",
+      id: string,
+      name: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateGameMutationVariables = {
+  input?: CreateGameInput,
+  condition?: ModelGameConditionInput | null,
+};
+
+export type CreateGameMutation = {
+  createGame?:  {
+    __typename: "Game",
+    id: string,
+    name: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateGameMutationVariables = {
+  input?: UpdateGameInput,
+  condition?: ModelGameConditionInput | null,
+};
+
+export type UpdateGameMutation = {
+  updateGame?:  {
+    __typename: "Game",
+    id: string,
+    name: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteGameMutationVariables = {
+  input?: DeleteGameInput,
+  condition?: ModelGameConditionInput | null,
+};
+
+export type DeleteGameMutation = {
+  deleteGame?:  {
+    __typename: "Game",
     id: string,
     name: string,
     createdAt: string,
@@ -155,6 +273,14 @@ export type GetUserQuery = {
     __typename: "User",
     id: string,
     name: string,
+    gameId: string,
+    game?:  {
+      __typename: "Game",
+      id: string,
+      name: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -173,6 +299,41 @@ export type ListUsersQuery = {
       __typename: "User",
       id: string,
       name: string,
+      gameId: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
+export type GetGameQueryVariables = {
+  id?: string,
+};
+
+export type GetGameQuery = {
+  getGame?:  {
+    __typename: "Game",
+    id: string,
+    name: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListGamesQueryVariables = {
+  filter?: ModelGameFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+};
+
+export type ListGamesQuery = {
+  listGames?:  {
+    __typename: "ModelGameConnection",
+    items?:  Array< {
+      __typename: "Game",
+      id: string,
+      name: string,
       createdAt: string,
       updatedAt: string,
     } | null > | null,
@@ -185,6 +346,14 @@ export type OnCreateUserSubscription = {
     __typename: "User",
     id: string,
     name: string,
+    gameId: string,
+    game?:  {
+      __typename: "Game",
+      id: string,
+      name: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -195,6 +364,14 @@ export type OnUpdateUserSubscription = {
     __typename: "User",
     id: string,
     name: string,
+    gameId: string,
+    game?:  {
+      __typename: "Game",
+      id: string,
+      name: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -203,6 +380,44 @@ export type OnUpdateUserSubscription = {
 export type OnDeleteUserSubscription = {
   onDeleteUser?:  {
     __typename: "User",
+    id: string,
+    name: string,
+    gameId: string,
+    game?:  {
+      __typename: "Game",
+      id: string,
+      name: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateGameSubscription = {
+  onCreateGame?:  {
+    __typename: "Game",
+    id: string,
+    name: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateGameSubscription = {
+  onUpdateGame?:  {
+    __typename: "Game",
+    id: string,
+    name: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteGameSubscription = {
+  onDeleteGame?:  {
+    __typename: "Game",
     id: string,
     name: string,
     createdAt: string,
