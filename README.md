@@ -1,23 +1,27 @@
 # Tetris with Scala.js and AWS Amplify
 
 An experimental project to develop Tetris with Scala.js and Amplify.
+The original game can be found [here](https://github.com/lihaoyi/scala-js-games).
+Try out the [Live DEMO](https://tetris.ignission.tech/)(click the black background to start).
+
+## Technical stack
+
+- [Scala.js: Scala to JavaScript compiler](https://github.com/scala-js/scala-js)
+- [scalajs-bundler: Module bundler for Scala.js projects that use NPM packages](https://github.com/scalacenter/scalajs-bundler)
+- [AWS Amplify: Hosting](https://aws.amazon.com/amplify/)
 
 ## Run on local
 
-    git checkout -b 0.1.0
-
     sbt dev
 
-You can visit `http://localhost:9000`
+You can enjoy at `http://localhost:9000`
 
 ## References
 
 Super thanks!
 
-- [Scala.js](https://github.com/scala-js/scala-js)
 - [scala-js-games](https://github.com/lihaoyi/scala-js-games)
 - [scalajs-react-tutorial](https://github.com/NomadBlacky/scalajs-react-tutorial)
-- [aws-sdk-scalajs-facade](https://github.com/exoego/aws-sdk-scalajs-facade)
 
 ## LICENSE
 
