@@ -34,21 +34,21 @@ lazy val root = (project in file("."))
   )
   .settings(
     useYarn := true,
-    version in webpack := "4.46.0",
-    version in startWebpackDevServer := "3.11.2",
+    webpack / version := "4.46.0",
+    startWebpackDevServer / version := "3.11.2",
     webpackResources := baseDirectory.value / "webpack" * "*",
     packageJson := PackageJson.readFrom(baseDirectory.value / "package.json"),
-    npmDependencies in Compile ++= packageJson.value.dependencies,
-    npmDevDependencies in Compile ++= packageJson.value.devDependencies,
-    webpackConfigFile in fastOptJS := Some(
+    Compile / npmDependencies ++= packageJson.value.dependencies,
+    Compile / npmDevDependencies ++= packageJson.value.devDependencies,
+    fastOptJS / webpackConfigFile := Some(
       baseDirectory.value / "webpack" / "webpack-fast.config.js"
     ),
-    webpackConfigFile in fullOptJS := Some(
+    fullOptJS / webpackConfigFile := Some(
       baseDirectory.value / "webpack" / "webpack-full.config.js"
     ),
-    webpackDevServerExtraArgs in fastOptJS := Seq("--inline"),
-    webpackBundlingMode in fastOptJS := BundlingMode.LibraryOnly(),
-    requireJsDomEnv in Test := true
+    fastOptJS / webpackDevServerExtraArgs := Seq("--inline"),
+    fastOptJS / webpackBundlingMode := BundlingMode.LibraryOnly(),
+    Test / requireJsDomEnv := true
   )
 
 addCommandAlias("fix", "all compile:scalafix; test:scalafix")
